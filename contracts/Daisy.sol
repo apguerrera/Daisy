@@ -2,21 +2,19 @@
 
 pragma solidity ^0.5.16;
 
-import "./DSChief.sol";
+import "./Maker/DSChief.sol";
+import "./Members.sol";
 
 
-
-contract Daisy {
+contract Daisy is Members {
     address public cold;
     address public hot;
     DSToken public gov;
     DSToken public iou;
     DSChief public chief;
 
-    constructor(DSChief _chief, address _cold, address _hot) public {
+    constructor(DSChief _chief) public {
         chief = _chief;
-        cold = _cold;
-        hot = _hot;
 
         gov = chief.GOV();
         iou = chief.IOU();
@@ -26,6 +24,11 @@ contract Daisy {
 
     modifier auth() {
         require(msg.sender == hot || msg.sender == cold, "Sender must be a Cold or Hot Wallet");
+        _;
+    }
+
+    modifier member () {
+        require(isInMemberList(msg.sender));
         _;
     }
 
@@ -50,5 +53,9 @@ contract Daisy {
 
     function vote(bytes32 slate) public auth {
         chief.vote(slate);
+    }
+
+    function signUp (address[] memory account) public {
+        _addMembers(account);
     }
 }

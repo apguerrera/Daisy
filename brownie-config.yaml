@@ -1,0 +1,76 @@
+project_structure:
+    build: build
+    contracts: contracts
+    interfaces: interfaces
+    reports: reports
+    scripts: scripts
+    tests: tests
+
+networks:
+    default: development
+    development:
+        gas_limit: 6721975
+        gas_price: 0
+        reverting_tx_gas_limit: 6721975
+        default_contract_owner: true
+        cmd_settings:
+            port: 8545
+            gas_limit: 6721975
+            accounts: 11
+            evm_version: istanbul
+
+    live:
+        gas_limit: auto
+        gas_price: auto
+        reverting_tx_gas_limit: false
+        default_contract_owner: false
+
+compiler:
+    evm_version: istanbul
+    solc:
+        version: 0.5.16
+        optimizer:
+            enabled: true
+            runs: 200000
+        remappings: null
+
+console:
+    show_colors: true
+    color_style: monokai
+    auto_suggest: true
+    completions: true
+
+reports:
+    exclude_paths: null
+    exclude_contracts: null
+
+hypothesis:
+    deadline: null
+    max_examples: 50
+    report_multiple_bugs: False
+    stateful_step_count: 10
+
+autofetch_sources: false
+dependencies: null
+dev_deployment_artifacts: false
+compiler:
+    solc:
+        version: null
+        evm_version: null
+        optimize: true
+        runs: 200
+        minify_source: false
+        remappings:
+          - "@openzeppelin=OpenZeppelin/openzeppelin-contracts@3.0.1"
+colors:
+    key:
+    value: bright blue
+    callable: bright cyan
+    module: bright blue
+    contract: bright magenta
+    contract_method: bright magenta
+    string: bright magenta
+    dull: dark white
+    error: bright red
+    success: bright green
+    pending: bright yellow
