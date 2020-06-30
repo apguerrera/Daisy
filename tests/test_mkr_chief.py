@@ -12,8 +12,9 @@ def isolation(fn_isolation):
     pass
 
 
-def test_init_mkr_token(mkr_token):
-    assert mkr_token.symbol() == MKR_NAME
+def test_init_mkr_chief(mkr_chief):
+    # not the hat yet
+    assert mkr_chief.isUserRoot(accounts[0], {'from': accounts[0]}) == False
 
-def test_init_iou_token(iou_token):
-    assert iou_token.symbol() == IOU_NAME
+# def test_init_iou_token(iou_token):
+#     assert iou_token.symbol() == IOU_NAME
