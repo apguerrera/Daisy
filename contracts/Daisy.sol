@@ -32,22 +32,21 @@ contract Daisy is Members {
 
     function lock(uint256 wad) public {
         isInMemberList(msg.sender);
-        gov.pull(msg.sender, wad);   // mkr from cold
+        gov.pull(msg.sender, wad);   // mkr from user
         chief.lock(wad);       // mkr out, ious in
-        gov.push(msg.sender, wad);   // mkr to cold
-
+        iou.push(msg.sender, wad);   // iou to user
     }
 
     function free(uint256 wad) public {
         isInMemberList(msg.sender);
+        iou.pull(msg.sender, wad);   // iou from user
         chief.free(wad);       // ious out, mkr in
-        gov.push(msg.sender, wad);   // mkr to cold
+        gov.push(msg.sender, wad);   // mkr to user
     }
 
+    function signUp (address[] memory account, uint256 wad) public {
 
-    function signUp (address[] memory account) public {
-        // add MKR to be locked up
-        // send IOU to holder
         _addMembers(account);
+        lock(wad);
     }
 }
