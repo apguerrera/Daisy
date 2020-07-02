@@ -30,23 +30,31 @@ contract Daisy is Members {
         return chief.vote(yays);
     }
 
-    function lock(uint256 wad) public {
+    function signUp (uint256 wad) public {
+        _addMember(address(msg.sender));
+        _lock(wad);
+    }
+
+    function withdraw(uint256 wad) public {
+        _removeMember(address(msg.sender));
+        _free(wad);
+    }
+
+    function _lock(uint256 wad) internal {
         isInMemberList(msg.sender);
         gov.pull(msg.sender, wad);   // mkr from user
+        // add to maci state tree
         chief.lock(wad);       // mkr out, ious in
         iou.push(msg.sender, wad);   // iou to user
     }
 
-    function free(uint256 wad) public {
+    function _free(uint256 wad) internal {
         isInMemberList(msg.sender);
         iou.pull(msg.sender, wad);   // iou from user
+        // remove from maci state tree
         chief.free(wad);       // ious out, mkr in
         gov.push(msg.sender, wad);   // mkr to user
     }
 
-    function signUp (address[] memory account, uint256 wad) public {
 
-        _addMembers(account);
-        lock(wad);
-    }
 }

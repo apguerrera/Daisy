@@ -30,6 +30,13 @@ contract Members {
             }
         }
     }
+    function _addMember(address account) internal {  
+        require(account != address(0));
+        if (!members[account]) {
+            members[account] = true;
+            emit MemberListed(account, true);
+        }
+    }
     function _removeMembers(address[] memory accounts) internal  {
         require(accounts.length != 0);
         for (uint i = 0; i < accounts.length; i++) {
@@ -40,6 +47,14 @@ contract Members {
             }
         }
     }
+    function _removeMember(address account) internal {  
+        require(account != address(0));
+        if (members[account]) {
+            delete members[account];
+            emit MemberListed(account, false);
+        }
+    }
 }
+
 
 

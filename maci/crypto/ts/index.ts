@@ -222,8 +222,8 @@ const genSeededBabyJubValue: SnarkBigInt = (seed: string
  * @return A BabyJub-compatible private key.
  */
 const genPrivKey: PrivKey = () => {
-
-    return genRandomBabyJubValue()
+    var seed = "signiture plus pin"
+    return genSeededBabyJubValue(seed)
 }
 
 /*
