@@ -187,6 +187,37 @@ const genRandomBabyJubValue: SnarkBigInt = (
     return privKey
 }
 
+
+const genSeededBabyJubValue: SnarkBigInt = (seed: string
+    ) => {
+    
+        // Check whether we are using the correct value for SNARK_FIELD_SIZE
+        assert(SNARK_FIELD_SIZE.eq(snarkjs.bn128.r))
+    
+        // Prevent modulo bias
+        const min = (
+            (snarkjs.bigInt(2).pow(snarkjs.bigInt(256))) - SNARK_FIELD_SIZE
+        ) % SNARK_FIELD_SIZE
+    
+        let rand: SnarkBigInt
+    
+        // while (true) {
+            // rand = snarkjs.bigInt('0x' + crypto.randomBytes(32).toString('hex'))
+
+            // if (rand >= min) {
+            //     break
+            // }
+        // }
+
+        rand = snarkjs.bigInt('0x' + seed.toString('hex'))
+
+        const privKey: PrivKey = rand % SNARK_FIELD_SIZE
+        assert(privKey < SNARK_FIELD_SIZE)
+    
+        return privKey
+    }
+    
+
 /*
  * @return A BabyJub-compatible private key.
  */
