@@ -2,9 +2,6 @@ pragma experimental ABIEncoderV2;
 pragma solidity ^0.5.0;
 
 import { SignUpGatekeeper } from "./SignUpGatekeeper.sol";
-import { BatchUpdateStateTreeVerifier } from "./BatchUpdateStateTreeVerifier.sol";
-import { QuadVoteTallyVerifier } from "./QuadVoteTallyVerifier.sol";
-// import { InitialVoiceCreditProxy } from './initialVoiceCreditProxy/InitialVoiceCreditProxy.sol';
 
 import { IncrementalMerkleTree } from "./IncrementalMerkleTree.sol"; 
 import { DomainObjs } from './DomainObjs.sol'; 
@@ -14,28 +11,15 @@ import { MACIParameters } from './MACIParameters.sol';
 import { VerifyTally } from './VerifyTally.sol'; 
 import { Ownable } from "@openzeppelin/contracts/ownership/Ownable.sol";
 
-contract MiniMACI is Ownable, DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
+contract MiniMaciState is Ownable, DomainObjs, ComputeRoot, MACIParameters {
 
     // A nothing-up-my-sleeve zero value
     // Should be equal to 5503045433092194285660061905880311622788666850989422096966288514930349325741
     uint256 ZERO_VALUE = uint256(keccak256(abi.encodePacked('Maci'))) % SNARK_SCALAR_FIELD;
 
-    // Verifier Contracts
-    BatchUpdateStateTreeVerifier internal batchUstVerifier;
-    QuadVoteTallyVerifier internal qvtVerifier;
-
     // The number of messages which the batch update state tree snark can
     // process per batch
     uint8 public messageBatchSize;
-
-    // The number of state leaves to tally per batch via the vote tally snark
-    uint8 public tallyBatchSize;
-
-    // The current message batch index
-    uint256 public currentMessageBatchIndex;
-
-    // The tree that tracks the sign-up messages.
-    IncrementalMerkleTree public messageTree;
 
     // The tree that tracks each user's public key and votes
     IncrementalMerkleTree public stateTree;
@@ -50,38 +34,12 @@ contract MiniMACI is Ownable, DomainObjs, ComputeRoot, MACIParameters, VerifyTal
     // _treeDepths.voteOptionTreeDepth leaves of value 0
     uint256 public emptyVoteOptionTreeRoot;
 
-    // To store hashLeftRight(Merkle root of 5 ** voteOptionTreeDepth zeros, 0)
-    uint256 public currentResultsCommitment;
-
-    // To store hashLeftRight(0, 0). We precompute it here to save gas.
-    uint256 public currentSpentVoiceCreditsCommitment = hashLeftRight(0, 0);
-
-    // To store hashLeftRight(Merkle root of 5 ** voteOptionTreeDepth zeros, 0)
-    uint256 public currentPerVOSpentVoiceCreditsCommitment;
-
     // The maximum number of leaves, minus one, of meaningful vote options.
     uint256 public voteOptionsMaxLeafIndex;
-
-    // The batch # for the quote tally function
-    uint256 public currentQvtBatchNum;
-
-    // Cached results of 2 ** depth - 1 where depth is the state tree depth and
-    // message tree depth
-    uint256 public messageTreeMaxLeafIndex;
 
     // The maximum number of signups allowed
     uint256 public maxUsers;
 
-    // The maximum number of messages allowed
-    uint256 public maxMessages;
-
-    // When the contract was deployed. We assume that the signup period starts
-    // immediately upon deployment.
-    uint256 public signUpTimestamp;
-
-    // Duration of the sign-up and voting periods, in seconds
-    uint256 public signUpDurationSeconds;
-    uint256 public votingDurationSeconds;
 
     // Address of the SignUpGatekeeper, a contract which determines whether a
     // user may sign up to vote

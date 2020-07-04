@@ -1,43 +1,50 @@
 
-
+pragma experimental ABIEncoderV2;
 pragma solidity ^0.5.16;
 
 import "./Maker/DSChief.sol";
 import "./Members.sol";
+import "./Maci/MiniMACI.sol";
+import {MACISharedObjs} from "./Maci/MACISharedObjs.sol";
 
 
-contract Daisy is Members {
+contract Daisy is Members, MACISharedObjs {
 
     DSToken public gov;
     DSToken public iou;
     DSChief public chief;
+    MiniMACI public maci;
 
-    constructor(DSChief _chief) public {
+    constructor(DSChief _chief, MiniMACI _maci) public {
         chief = _chief;
-
+        maci = _maci;
         gov = chief.GOV();
         iou = chief.IOU();
         gov.approve(address(chief), uint256(-1));
         iou.approve(address(chief), uint256(-1));
     }
 
-    function memberVote() public {
+    function publishMessage(Message memory _message,
+        PubKey memory _encPubKey
+        ) public {
         require(isInMemberList(msg.sender));
+        maci.publishMessage(_message,_encPubKey);
     }
 
     function coordintorSubmit(address[] memory yays) internal returns (bytes32) {
-        // zero knowledge proof for result
+        // require(verifyTallyResult(_depth,_index, _leaf, _pathElements,_salt));
         return chief.vote(yays);
     }
 
-    function signUp (uint256 wad) public {
+    function register(uint256 wad, PubKey memory _key) public {
         _addMember(address(msg.sender));
+        maci.signUp(_key,"");
         _lock(wad);
     }
 
-    function withdraw(uint256 wad) public {
-        _removeMember(address(msg.sender));
+    function unregister(uint256 wad) public {
         _free(wad);
+        _removeMember(address(msg.sender));
     }
 
     function _lock(uint256 wad) internal {
