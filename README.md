@@ -43,10 +43,13 @@ It is generally considered a best practice to keep wallets that hold any signifi
 
 #### Add Privacy Pin (Users, New / optional)
 * User adds 4 digit pin, signed by their hot wallet. 
+* Signed pin is used as seed in MACI KeyGen for anonymous voting
 * This pin can be changed at any time
 
 #### Vote on proposals (Users)
-* Vote normally. Enter your pin to vote anoymously
+* Vote normally. Enter your pin to vote anonymously
+* Incorrect pin will succeed, but not be counted 
+* No way for public to determine correctness of pin
 
 #### Proof of Correctness (Submitted by MakerDAO)
 * Votes are tallied and verified with a proof
