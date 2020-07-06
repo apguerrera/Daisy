@@ -90,8 +90,6 @@ def mini_maci(MockMACI,gate_keeper, poseidon_3, poseidon_6, batch_verifier,tally
     return mini_maci
 
 
-
-
 @pytest.fixture(scope='module', autouse=True)
 def daisy(Daisy, mkr_chief, mini_maci, gate_keeper):
     daisy = Daisy.deploy(mkr_chief, mini_maci, gate_keeper, {'from': accounts[0]})

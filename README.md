@@ -58,12 +58,17 @@ It is generally considered a best practice to keep wallets that hold any signifi
 * Circom circuit ensures every vote is counted, correctly
 * Final vote count is commited and publicly verifiable
 
+
+![daisy pin](/docs/daisypin.png "Daisy Pin")
+
 ## Demo 
 
 #### View the demo videos.
 https://photos.google.com/share/AF1QipNQyAW2YxNzll9R-E4DYOW6ppD-lr5bW2UOyPuVBH_1AvJOouVyq-SG1xp0vgEnxQ?key=Rl9aWWM2bWtHclN4cHA1QzlTR0hDYmJtQXNweTF3
 
-#### Pin powered Maci KeyPair Generator 
+#### Smart Contracts
+
+#### Pin powered Maci KeyPair Generator (AWS Lambda / Temperamental)
 https://studio.petyl.com/voting/daisy
 
 
@@ -76,6 +81,10 @@ We use metamask to sign the pin number with your private key to generate a set o
 We use metamask to generate the voting key pairs. In fact, it’s just signing a message, simple. No specific wallet or integration required, just sign a message. 
 Our Solution will be using the existing wallet providers so there is no need of any Custom wallet or any other Plugins for the process. Votes are encrypted in the browser using standard crypto libraries, so again can be wallet agnostic.
 
+#### Security
+
+If you ever get worried that you have a huge stack of MKR and that people will force you to vote on a spell in the middle of the night, rest assured you can now vote with ease. You can vote as you normally would, just use the wrong pin, no one can prove that you did otherwise. You can also change your pin for extra peace of mine. We use the existing proxy voting contracts and add a layer of zero-knowledge proofs to ensure each vote can only ever be counted once, from valid votes. 
+
 #### Trustworthy
 
 Suppose that we have an application where we need collusion resistance, but we also need the blockchain’s guarantees (mainly correct execution and censorship-resistance). 
@@ -83,8 +92,6 @@ Voting is a prime candidate for this use case: collusion resistance is essential
 
 We can make a system that provides the collusion resistance guarantee with a centralized trust model (if Bob is honest we have collusion resistance, If Bob is dishonest we don’t), and also provides the blockchain’s guarantees unconditionally (ie. Bob can’t cause the other guarantees to break by being dishonest).
 
-#### Security
-We use the existing proxy voting contracts and add a layer of zero-knowledge proofs to signal our vote. 
 
 #### Transparent Anonymity
 
