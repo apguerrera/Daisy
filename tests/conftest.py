@@ -62,39 +62,37 @@ def poseidon_3(interface):
     poseidon_3 = interface.PoseidonT3(tx.contract_address)
     return poseidon_3
 
-# @pytest.fixture(scope='module', autouse=True)
-# def mini_maci(MiniMACI,gate_keeper, poseidon_3, poseidon_6, batch_verifier,tally_verifier, credit_proxy):
-#     treeDepths = [4,4,4]
-#     batchSizes = [4,4]
-#     maxValues = [100,100,10]
-#     signUpGatekeeper = gate_keeper
-#     batchUstVerifier = batch_verifier
-#     qvtVerifier = tally_verifier
-#     signUpDurationSeconds = 600
-#     votingDurationSeconds = 600
-#     initialVoiceCreditProxy = credit_proxy
-#     coordinatorPubKey = [0,0]
+@pytest.fixture(scope='module', autouse=True)
+def mini_maci(MockMACI,gate_keeper, poseidon_3, poseidon_6, batch_verifier,tally_verifier, credit_proxy):
+    treeDepths = [4,4,4]
+    batchSizes = [4,4]
+    maxValues = [100,100,10]
+    signUpGatekeeper = gate_keeper
+    batchUstVerifier = batch_verifier
+    qvtVerifier = tally_verifier
+    signUpDurationSeconds = 600
+    votingDurationSeconds = 600
+    initialVoiceCreditProxy = credit_proxy
+    coordinatorPubKey = [0,0]
 
-#     mini_maci = MiniMACI.deploy( treeDepths,
-#                                     batchSizes,
-#                                     maxValues,
-#                                     signUpGatekeeper,
-#                                     batchUstVerifier,
-#                                     qvtVerifier,
-#                                     signUpDurationSeconds,
-#                                     votingDurationSeconds,
-#                                     initialVoiceCreditProxy,
-#                                     coordinatorPubKey,
-#                                     poseidon_3, 
-#                                      poseidon_6,
-#                             {'from': accounts[0]})
-#     return mini_maci
+    mini_maci = MockMACI.deploy( treeDepths,
+                                    batchSizes,
+                                    maxValues,
+                                    signUpGatekeeper,
+                                    batchUstVerifier,
+                                    qvtVerifier,
+                                    signUpDurationSeconds,
+                                    votingDurationSeconds,
+                                    initialVoiceCreditProxy,
+                                    coordinatorPubKey,
 
+                            {'from': accounts[0]})
+    return mini_maci
 
 
 
-# @pytest.fixture(scope='module', autouse=True)
-# def daisy(Daisy):
-#     daisy = Daisy.deploy({'from': accounts[0]})
-#     return daisy
 
+@pytest.fixture(scope='module', autouse=True)
+def daisy(Daisy, mkr_chief, mini_maci, gate_keeper):
+    daisy = Daisy.deploy(mkr_chief, mini_maci, gate_keeper, {'from': accounts[0]})
+    return daisy

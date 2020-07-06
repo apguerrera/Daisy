@@ -58,6 +58,15 @@ It is generally considered a best practice to keep wallets that hold any signifi
 * Circom circuit ensures every vote is counted, correctly
 * Final vote count is commited and publicly verifiable
 
+## Demo 
+
+#### View the demo videos.
+https://photos.google.com/share/AF1QipNQyAW2YxNzll9R-E4DYOW6ppD-lr5bW2UOyPuVBH_1AvJOouVyq-SG1xp0vgEnxQ?key=Rl9aWWM2bWtHclN4cHA1QzlTR0hDYmJtQXNweTF3
+
+#### Pin powered Maci KeyPair Generator 
+https://studio.petyl.com/voting/daisy
+
+
 ## Features
 #### No Secondary Keys or ZK-Notes
 We use metamask to sign the pin number with your private key to generate a set of keys in your browser. No writing down Twisted Edward keypairs that only work in SNARKs, no copying and pasting ZK notes that are as good as gold in your compromised clipboard and saved to your machine. Everything happens using your private key, signing any 4 digit pin to generate a temporary key. If you use the same pin, will generate the same key next time. No complicated 3box implementation to store those zk keys or notes, nor explaining to your users what on earth they are doing or what is actually happening.

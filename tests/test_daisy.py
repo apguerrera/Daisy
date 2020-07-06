@@ -12,7 +12,6 @@ def isolation(fn_isolation):
     pass
 
 
-def test_init_mini_maci(mini_maci):
-    # not the hat yet
-    assert mini_maci.numMessages({'from': accounts[0]}) == 0
+def test_init_daisy(daisy, mini_maci):
+    assert daisy.maci() == mini_maci
 
