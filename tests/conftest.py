@@ -5,6 +5,7 @@ from brownie.convert import to_address
 import pytest
 from brownie import Contract
 from settings import *
+from poseidon import *
 
 ######################################
 # Deploy Contracts
@@ -28,6 +29,15 @@ def mkr_chief(DSChief, mkr_token, iou_token):
     mkr_chief = DSChief.deploy(mkr_token, iou_token, MAX_YAYS, {'from': accounts[0]})
     return mkr_chief
 
+@pytest.fixture(scope='module', autouse=True)
+def poseidon_6(Poseidon):
+    poseidon_6 = PoseidonT6.deploy({'data': poseidon_6, 'from': accounts[0]})
+    return poseidon_6
+
+@pytest.fixture(scope='module', autouse=True)
+def poseidon_3(PoseidonT3):
+    poseidon_3 = PoseidonT3.deploy({'data': poseidon_3, 'from': accounts[0]})
+    return poseidon_3
 
 
 # @pytest.fixture(scope='module', autouse=True)

@@ -129,7 +129,6 @@ contract IncrementalMerkleTree is Ownable, Hasher {
                 // the (hashed) zero value for `right`
                 left = currentLevelHash;
                 right = zeros[i];
-
                 filledSubtrees[i] = currentLevelHash;
             } else {
                 left = filledSubtrees[i];

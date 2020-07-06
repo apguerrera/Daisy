@@ -1,49 +1,89 @@
 pragma experimental ABIEncoderV2;
 pragma solidity ^0.5.0;
 
-import { SignUpGatekeeper } from "./SignUpGatekeeper.sol";
 
-import { IncrementalMerkleTree } from "./IncrementalMerkleTree.sol"; 
-import { DomainObjs } from './DomainObjs.sol'; 
-import { SnarkConstants } from './SnarkConstants.sol'; 
-import { ComputeRoot } from './ComputeRoot.sol'; 
-import { MACIParameters } from './MACIParameters.sol'; 
-import { VerifyTally } from './VerifyTally.sol'; 
+import { SignUpGatekeeper } from "./Maci/SignUpGatekeeper.sol";
+import { BatchUpdateStateTreeVerifier } from "./Maci/BatchUpdateStateTreeVerifier.sol";
+import { QuadVoteTallyVerifier } from "./Maci/QuadVoteTallyVerifier.sol";
+// import { InitialVoiceCreditProxy } from './Maci/InitialVoiceCreditProxy.sol';
+
+import { IncrementalMerkleTree } from "./Maci/IncrementalMerkleTree.sol"; 
+import { DomainObjs } from './Maci/DomainObjs.sol'; 
+import { SnarkConstants } from './Maci/SnarkConstants.sol'; 
+import { ComputeRoot } from './Maci/ComputeRoot.sol'; 
+import { MACIParameters } from './Maci/MACIParameters.sol'; 
+import { VerifyTally } from './Maci/VerifyTally.sol'; 
 import { Ownable } from "@openzeppelin/contracts/ownership/Ownable.sol";
+import { MiniMaciState } from "./MiniMaciState.sol";
 
-contract MiniMaciState is Ownable, DomainObjs, ComputeRoot, MACIParameters {
+contract MiniMACIMessage is Ownable, DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
 
     // A nothing-up-my-sleeve zero value
     // Should be equal to 5503045433092194285660061905880311622788666850989422096966288514930349325741
     uint256 ZERO_VALUE = uint256(keccak256(abi.encodePacked('Maci'))) % SNARK_SCALAR_FIELD;
 
+    // Verifier Contracts
+    BatchUpdateStateTreeVerifier internal batchUstVerifier;
+    QuadVoteTallyVerifier internal qvtVerifier;
+
     // The number of messages which the batch update state tree snark can
     // process per batch
     uint8 public messageBatchSize;
 
-    // The tree that tracks each user's public key and votes
-    IncrementalMerkleTree public stateTree;
+    // The number of state leaves to tally per batch via the vote tally snark
+    uint8 public tallyBatchSize;
 
+    // The current message batch index
+    uint256 public currentMessageBatchIndex;
+
+    // The tree that tracks the sign-up messages.
+    IncrementalMerkleTree public messageTree;
+
+    // The tree that tracks each user's public key and votes
+    MiniMaciState public maciState;
     // The Merkle root of the state tree after the sign-up period.
     // publishMessage() will not update the state tree. Rather, it will
     // directly update postSignUpStateRoot if given a valid proof and public
     // signals.
     uint256 public postSignUpStateRoot;
 
+    uint256 public stateRoot;
     // To store the Merkle root of a tree with 5 **
     // _treeDepths.voteOptionTreeDepth leaves of value 0
     uint256 public emptyVoteOptionTreeRoot;
 
+    // To store hashLeftRight(Merkle root of 5 ** voteOptionTreeDepth zeros, 0)
+    uint256 public currentResultsCommitment;
+
+    // To store hashLeftRight(0, 0). We precompute it here to save gas.
+    uint256 public currentSpentVoiceCreditsCommitment;
+
+    // To store hashLeftRight(Merkle root of 5 ** voteOptionTreeDepth zeros, 0)
+    uint256 public currentPerVOSpentVoiceCreditsCommitment;
+
     // The maximum number of leaves, minus one, of meaningful vote options.
     uint256 public voteOptionsMaxLeafIndex;
+
+    // The batch # for the quote tally function
+    uint256 public currentQvtBatchNum;
+
+    // Cached results of 2 ** depth - 1 where depth is the state tree depth and
+    // message tree depth
+    uint256 public messageTreeMaxLeafIndex;
 
     // The maximum number of signups allowed
     uint256 public maxUsers;
 
+    // The maximum number of messages allowed
+    uint256 public maxMessages;
 
-    // Address of the SignUpGatekeeper, a contract which determines whether a
-    // user may sign up to vote
-    SignUpGatekeeper public signUpGatekeeper;
+    // When the contract was deployed. We assume that the signup period starts
+    // immediately upon deployment.
+    uint256 public voteTimestamp;
+
+    // Duration of the sign-up and voting periods, in seconds
+    uint256 public votingDurationSeconds;
+
 
     // The contract which provides the values of the initial voice credit
     // balance per user
@@ -52,17 +92,11 @@ contract MiniMaciState is Ownable, DomainObjs, ComputeRoot, MACIParameters {
     // The coordinator's public key
     PubKey public coordinatorPubKey;
 
-    uint256 public numSignUps = 0;
+    uint256 public numSignUps;
     uint256 public numMessages = 0;
 
     TreeDepths public treeDepths;
 
-    // Events
-    event SignUp(
-        PubKey indexed _userPubKey,
-        uint256 indexed _stateIndex,
-        uint256 indexed _voiceCreditBalance
-    );
 
     event PublishMessage(
         Message indexed _message,
@@ -73,35 +107,30 @@ contract MiniMaciState is Ownable, DomainObjs, ComputeRoot, MACIParameters {
         TreeDepths memory _treeDepths,
         BatchSizes memory _batchSizes,
         MaxValues memory _maxValues,
-        SignUpGatekeeper _signUpGatekeeper,
         BatchUpdateStateTreeVerifier _batchUstVerifier,
         QuadVoteTallyVerifier _qvtVerifier,
-        uint256 _signUpDurationSeconds,
+        uint256 _voteTimestamp,
         uint256 _votingDurationSeconds,
+        MiniMaciState _maciState,
         // InitialVoiceCreditProxy _initialVoiceCreditProxy,
         PubKey memory _coordinatorPubKey
     ) Ownable() public {
-
+        currentSpentVoiceCreditsCommitment = hashLeftRight(0, 0);
         treeDepths = _treeDepths;
 
         tallyBatchSize = _batchSizes.tallyBatchSize;
         messageBatchSize = _batchSizes.messageBatchSize;
+        maciState = _maciState;
+        stateRoot = getStateTreeRoot();
 
         // Set the verifier contracts
         batchUstVerifier = _batchUstVerifier;
         qvtVerifier = _qvtVerifier;
 
         // Set the sign-up duration
-        signUpTimestamp = now;
-        signUpDurationSeconds = _signUpDurationSeconds;
+        voteTimestamp = _voteTimestamp;
         votingDurationSeconds = _votingDurationSeconds;
         
-        // Set the sign-up gatekeeper contract
-        signUpGatekeeper = _signUpGatekeeper;
-        
-        // Set the initial voice credit balance proxy
-        // initialVoiceCreditProxy = _initialVoiceCreditProxy;
-
         // Set the coordinator's public key
         coordinatorPubKey = _coordinatorPubKey;
 
@@ -137,39 +166,14 @@ contract MiniMaciState is Ownable, DomainObjs, ComputeRoot, MACIParameters {
         currentResultsCommitment = hashLeftRight(emptyVoteOptionTreeRoot, 0);
         currentPerVOSpentVoiceCreditsCommitment = currentResultsCommitment;
 
-        // Compute the hash of a blank state leaf
-        uint256 h = hashedBlankStateLeaf();
-
-        // Create the state tree
-        stateTree = new IncrementalMerkleTree(_treeDepths.stateTreeDepth, h);
-
-        // Make subsequent insertions start from leaf #1, as leaf #0 is only
-        // updated with random data if a command is invalid.
-        stateTree.insertLeaf(h);
     }
 
-    /*
-     * Returns the deadline to sign up.
-     */
-    function calcSignUpDeadline() public view returns (uint256) {
-        return signUpTimestamp + signUpDurationSeconds;
-    }
-
-
-    /*
-     * Ensures that the calling function only continues execution if the
-     * current block time is after or equal to the sign-up deadline.
-     */
-    modifier isAfterSignUpDeadline() {
-        require(now >= calcSignUpDeadline(), "MACI: the sign-up period is not over");
-        _;
-    }
 
     /*
      * Returns the deadline to vote
      */
     function calcVotingDeadline() public view returns (uint256) {
-        return calcSignUpDeadline() + votingDurationSeconds;
+        return voteTimestamp + votingDurationSeconds;
     }
 
     /*
@@ -190,68 +194,6 @@ contract MiniMaciState is Ownable, DomainObjs, ComputeRoot, MACIParameters {
         _;
     }
 
-    /*
-     * Allows a user who is eligible to sign up to do so. The sign-up
-     * gatekeeper will prevent double sign-ups or ineligible users from signing
-     * up. This function will only succeed if the sign-up deadline has not
-     * passed. It also inserts a fresh state leaf into the state tree.
-     * @param _userPubKey The user's desired public key.
-     * @param _signUpGatekeeperData Data to pass to the sign-up gatekeeper's
-     *     register() function. For instance, the POAPGatekeeper or
-     *     SignUpTokenGatekeeper requires this value to be the ABI-encoded
-     *     token ID.
-     */
-
-    function signUp(
-        uint256 _x,
-        uint256 _y,
-        bytes memory _signUpGatekeeperData
-        // bytes memory _initialVoiceCreditProxyData
-    ) 
-    public {
-        PubKey memory userPubKey = PubKey({x:_x,y:_y});
-        signUp(userPubKey, _signUpGatekeeperData);
-    }
-
-    function signUp(
-        PubKey memory _userPubKey,
-        bytes memory _signUpGatekeeperData
-        // bytes memory _initialVoiceCreditProxyData
-    ) 
-    public {
-
-        require(numSignUps < maxUsers, "MACI: maximum number of signups reached");
-
-        // Register the user via the sign-up gatekeeper. This function should
-        // throw if the user has already registered or if ineligible to do so.
-        signUpGatekeeper.register(msg.sender, _signUpGatekeeperData);
-
-        // uint256 voiceCreditBalance = initialVoiceCreditProxy.getVoiceCredits(
-        //     msg.sender,
-        //     _initialVoiceCreditProxyData
-        // );
-
-        // AG: This needs to be the locked up MKR/IOU balance
-        uint256 voiceCreditBalance = 100;
-
-        // Create, hash, and insert a fresh state leaf
-        StateLeaf memory stateLeaf = StateLeaf({
-            pubKey: _userPubKey,
-            voteOptionTreeRoot: emptyVoteOptionTreeRoot,
-            voiceCreditBalance: voiceCreditBalance,
-            nonce: 0
-        });
-
-        uint256 hashedLeaf = hashStateLeaf(stateLeaf);
-
-        stateTree.insertLeaf(hashedLeaf);
-
-        numSignUps ++;
-
-        // numSignUps is equal to the state index of the leaf which was just
-        // added to the state tree above
-        emit SignUp(_userPubKey, numSignUps, voiceCreditBalance);
-    }
 
     /*
      * Allows anyone to publish a message (an encrypted command and signature).
@@ -266,7 +208,6 @@ contract MiniMaciState is Ownable, DomainObjs, ComputeRoot, MACIParameters {
         Message memory _message,
         PubKey memory _encPubKey
     ) 
-    isAfterSignUpDeadline
     isBeforeVotingDeadline
     public {
 
@@ -281,9 +222,9 @@ contract MiniMaciState is Ownable, DomainObjs, ComputeRoot, MACIParameters {
         // IncrementalQuinTree.insertLeaf() anyway.
         if (postSignUpStateRoot == 0) {
             // It is exceedingly improbable that the zero value is a tree root
-            assert(postSignUpStateRoot != stateTree.root());
+            assert(postSignUpStateRoot != stateRoot);
 
-            postSignUpStateRoot = stateTree.root();
+            postSignUpStateRoot = stateRoot;
 
             // This is exceedingly unlikely to occur
             assert(postSignUpStateRoot != 0);
@@ -598,6 +539,6 @@ contract MiniMaciState is Ownable, DomainObjs, ComputeRoot, MACIParameters {
     }
 
     function getStateTreeRoot() public view returns (uint256) {
-        return stateTree.root();
+        return maciState.getStateTreeRoot();
     }
 }
