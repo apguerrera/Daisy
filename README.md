@@ -31,14 +31,18 @@ In systems built with Daisy make collusion among participants difficult while re
 
 
 ## Implementation
-#### Create a voting contract.
+#### Create a voting contract. (Once by MakerDAO)
 Replaces the existing proxy voting process with a new voting contract, except we will have some additional features in the smart contract to ensure coercion (bribery) resistant voting, powered by the MACI voting system. 
 
 * Daisy will be using existing MKR proxy voting smart contracts.
 It is generally considered a best practice to keep wallets that hold any significant value in cryptocurrency offline as much as possible, i.e. to use a “cold wallet”.
+
+#### Deposit MKR (Users, exisiting process)
 * To vote, MKR owners must “lock up” their tokens by transferring them to the voting system. Once transferred, they can then vote on different proposals with the weight of the MKR that is locked up.
 * The voting proxy contract assures that MKR owners can vote with the full weight of the MKR they own, both for Governance voting and for Executive voting.
 
+#### Add Privacy Pin (New)
+* User signs a 4 digit pin of their choosing with their hot wallet key
 
 
 ## Features
