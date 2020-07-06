@@ -32,18 +32,18 @@ contract Daisy is MACISharedObjs, DaisyGatekeeper,  InitialVoiceCreditProxy {
 // User Functions
 // ----------------------------------------------------------------------------
 
-
     /// @dev Add user to members list and state tree then lock MKR tokens
     function signUp(uint256 wad, PubKey memory _key) public {
         maci.signUp(_key,"");
         _lock(wad);
     }
 
-    function getVoiceCredits(address _user, bytes memory _data) public view returns (uint256) {
+    /// @dev Voting weights are done based on number ot tokens deposited. 
+    function getVoiceCredits(address _user, bytes memory _data) 
+        public view returns (uint256) 
+    {
         return iou.balanceOf(msg.sender);
     }
-
-
 
     /// @dev Release voting tokens and exit the private voting contract
     function withdraw(uint256 wad) public {
@@ -69,7 +69,7 @@ contract Daisy is MACISharedObjs, DaisyGatekeeper,  InitialVoiceCreditProxy {
 
 
 // ----------------------------------------------------------------------------
-// Coordinator
+// Coordinator Proofs
 // ----------------------------------------------------------------------------
 
     /// @dev Coordinator counts votes within messages, with batch proofs
@@ -98,9 +98,18 @@ contract Daisy is MACISharedObjs, DaisyGatekeeper,  InitialVoiceCreditProxy {
                 _proof);
     }
 
+    /// @dev check total number votes cast for a specific salt
+    function verifySpentVoiceCredits(
+        uint256 _spent,
+        uint256 _salt
+    ) public view returns (bool) {
+        return maci.verifySpentVoiceCredits(_spent, _salt);
+    }
+
+
     /// @dev Once the private voting window has finished, coordinator submits yays
     function coordintorSubmit(
-                uint8 _depth,
+        uint8 _depth,
         uint256 _index,
         uint256 _leaf,
         uint256[][] memory _pathElements,
@@ -111,14 +120,6 @@ contract Daisy is MACISharedObjs, DaisyGatekeeper,  InitialVoiceCreditProxy {
         require(maci.verifyTallyResult(_depth,_index, _leaf, _pathElements,_salt));
         return chief.vote(yays);
     }
-
-    // function verifySpentVoiceCredits(
-    //     uint256 _spent,
-    //     uint256 _salt
-    // ) public view returns (bool) {
-    //     uint256 computedCommitment = hashLeftRight(_spent, _salt);
-    //     return computedCommitment == currentSpentVoiceCreditsCommitment;
-    // }
 
 
 // ----------------------------------------------------------------------------

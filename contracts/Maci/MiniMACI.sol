@@ -120,7 +120,7 @@ contract MiniMACI is Ownable, DomainObjs, ComputeRoot, MACIParameters, VerifyTal
         QuadVoteTallyVerifier _qvtVerifier,
         uint256 _signUpDurationSeconds,
         uint256 _votingDurationSeconds,
-        // InitialVoiceCreditProxy _initialVoiceCreditProxy,
+        InitialVoiceCreditProxy _initialVoiceCreditProxy,
         PubKey memory _coordinatorPubKey
     ) Ownable() public {
 
@@ -142,7 +142,7 @@ contract MiniMACI is Ownable, DomainObjs, ComputeRoot, MACIParameters, VerifyTal
         signUpGatekeeper = _signUpGatekeeper;
         
         // Set the initial voice credit balance proxy
-        // initialVoiceCreditProxy = _initialVoiceCreditProxy;
+        initialVoiceCreditProxy = _initialVoiceCreditProxy;
 
         // Set the coordinator's public key
         coordinatorPubKey = _coordinatorPubKey;
@@ -248,7 +248,7 @@ contract MiniMACI is Ownable, DomainObjs, ComputeRoot, MACIParameters, VerifyTal
         uint256 _x,
         uint256 _y,
         bytes memory _signUpGatekeeperData
-        // bytes memory _initialVoiceCreditProxyData
+        bytes memory _initialVoiceCreditProxyData
     ) 
     public {
         PubKey memory userPubKey = PubKey({x:_x,y:_y});
@@ -268,13 +268,11 @@ contract MiniMACI is Ownable, DomainObjs, ComputeRoot, MACIParameters, VerifyTal
         // throw if the user has already registered or if ineligible to do so.
         signUpGatekeeper.register(msg.sender, _signUpGatekeeperData);
 
-        // uint256 voiceCreditBalance = initialVoiceCreditProxy.getVoiceCredits(
-        //     msg.sender,
-        //     _initialVoiceCreditProxyData
-        // );
+        uint256 voiceCreditBalance = initialVoiceCreditProxy.getVoiceCredits(
+            msg.sender,
+            _initialVoiceCreditProxyData
+        );
 
-        // AG: This needs to be the locked up MKR/IOU balance
-        uint256 voiceCreditBalance = 100;
 
         // Create, hash, and insert a fresh state leaf
         StateLeaf memory stateLeaf = StateLeaf({
