@@ -12,7 +12,7 @@ def isolation(fn_isolation):
     pass
 
 
-# def test_init_mini_maci(mini_maci):
-#     # not the hat yet
-#     assert mkr_chief.numSignUps({'from': accounts[0]}) == 0
+def test_init_mini_maci(mini_maci):
+    # not the hat yet
+    assert mkr_chief.tallyBatchSize({'from': accounts[0]}) == 4
 

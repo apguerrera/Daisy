@@ -137,5 +137,4 @@ contract Daisy is MACISharedObjs {
         gov.push(msg.sender, wad);   // mkr to user
     }
 
-
 }

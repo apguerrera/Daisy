@@ -50,8 +50,20 @@ def batch_verifier(BatchUpdateStateTreeVerifier):
     batch_verifier = BatchUpdateStateTreeVerifier.deploy({'from': accounts[0]})
     return batch_verifier
 
+@pytest.fixture(scope='module', autouse=True)
+def poseidon_6(interface):
+    tx = accounts[0].transfer(data=poseidon_6_data)
+    poseidon_6 = interface.PoseidonT6(tx.contract_address)
+    return poseidon_6
+
+@pytest.fixture(scope='module', autouse=True)
+def poseidon_3(interface):
+    tx = accounts[0].transfer(data=poseidon_3_data)
+    poseidon_3 = interface.PoseidonT3(tx.contract_address)
+    return poseidon_3
+
 # @pytest.fixture(scope='module', autouse=True)
-# def mini_maci(MiniMACI,gate_keeper, batch_verifier,tally_verifier, credit_proxy):
+# def mini_maci(MiniMACI,gate_keeper, poseidon_3, poseidon_6, batch_verifier,tally_verifier, credit_proxy):
 #     treeDepths = [4,4,4]
 #     batchSizes = [4,4]
 #     maxValues = [100,100,10]
@@ -72,22 +84,13 @@ def batch_verifier(BatchUpdateStateTreeVerifier):
 #                                     signUpDurationSeconds,
 #                                     votingDurationSeconds,
 #                                     initialVoiceCreditProxy,
-#                                     coordinatorPubKey, 
+#                                     coordinatorPubKey,
+#                                     poseidon_3, 
+#                                      poseidon_6,
 #                             {'from': accounts[0]})
 #     return mini_maci
 
 
-
-@pytest.fixture(scope='module', autouse=True)
-def poseidon6():
-    accounts[0].transfer(data=poseidon_6)
-    # poseidon6 = PoseidonT6.at({'data': poseidon_6, 'from': accounts[0]})
-    return poseidon_6
-
-# @pytest.fixture(scope='module', autouse=True)
-# def poseidon_3(PoseidonT3):
-#     poseidon_3 = PoseidonT3.deploy({'data': poseidon_3, 'from': accounts[0]})
-#     return poseidon_3
 
 
 # @pytest.fixture(scope='module', autouse=True)
