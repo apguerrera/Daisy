@@ -30,6 +30,16 @@ In reality, the real magic about Daisy is not in its pin, but its ability to bro
 In systems built with Daisy make collusion among participants difficult while retaining the censorship resistance and correct-execution are benefits of smart contracts. Although Daisy can provide collision resistance only if the coordinator is honest, a dishonest coordinator neither censors any of one message. nor tamper with the execution of the final tally.
 
 
+## Implementation
+#### Create a voting contract.
+Replaces the existing proxy voting process with a new voting contract, except we will have some additional features in the smart contract to ensure coercion (bribery) resistant voting, powered by the MACI voting system. 
+
+* Daisy will be using existing MKR proxy voting smart contracts.
+It is generally considered a best practice to keep wallets that hold any significant value in cryptocurrency offline as much as possible, i.e. to use a “cold wallet”.
+* To vote, MKR owners must “lock up” their tokens by transferring them to the voting system. Once transferred, they can then vote on different proposals with the weight of the MKR that is locked up.
+* The voting proxy contract assures that MKR owners can vote with the full weight of the MKR they own, both for Governance voting and for Executive voting.
+
+
 
 ## Features
 #### No Secondary Keys or ZK-Notes
