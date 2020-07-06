@@ -12,9 +12,6 @@ def isolation(fn_isolation):
     pass
 
 
-# def test_init_poseidon_6(poseidon_6):
-#     # not the hat yet
-#     assert poseidon_6.hash([0,2], {'from': accounts[0]}) == 0
-
-# def test_init_iou_token(iou_token):
-#     assert iou_token.symbol() == IOU_NAME
+def test_init_gate_keeper(gate_keeper):
+    # not the hat yet
+    assert gate_keeper.isInMemberList(accounts[0], {'from': accounts[0]}) == False

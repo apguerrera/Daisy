@@ -28,6 +28,9 @@ proof.json
 circuit.json
 input.json
 
+maci/config/ropsten.yaml
+ropstenPrivkey.json
+
 app/circuits/*
 app/contracts/*
 

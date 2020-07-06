@@ -3,27 +3,26 @@ pragma experimental ABIEncoderV2;
 pragma solidity ^0.5.16;
 
 import "./Maker/DSChief.sol";
-import "./DaisyGatekeeper.sol";
 import "./Maci/MiniMACI.sol";
 import {MACISharedObjs} from "./Maci/MACISharedObjs.sol";
-import "./Maci/InitialVoiceCreditProxy.sol";
+import "./DaisyGatekeeper.sol";
 
 
-contract Daisy is MACISharedObjs, DaisyGatekeeper,  InitialVoiceCreditProxy {
+contract Daisy is MACISharedObjs {
 
     DSToken public gov;
     DSToken public iou;
     DSChief public chief;
     MiniMACI public maci;
+    DaisyGatekeeper public gatekeeper;
 
     /// @dev set both the DSChief tokens and MACI voting contracts
-    constructor(DSChief _chief, MiniMACI _maci) public {
+    constructor(DSChief _chief, MiniMACI _maci, DaisyGatekeeper _gatekeeper) public {
         chief = _chief;
         maci = _maci;
+        gatekeeper = _gatekeeper;
         gov = chief.GOV();
         iou = chief.IOU();
-        initOperated(msg.sender);
-        addOperator(address(maci));
         gov.approve(address(chief), uint256(-1));
         iou.approve(address(chief), uint256(-1));
     }
@@ -38,12 +37,6 @@ contract Daisy is MACISharedObjs, DaisyGatekeeper,  InitialVoiceCreditProxy {
         _lock(wad);
     }
 
-    /// @dev Voting weights are done based on number ot tokens deposited. 
-    function getVoiceCredits(address _user, bytes memory _data) 
-        public view returns (uint256) 
-    {
-        return iou.balanceOf(msg.sender);
-    }
 
     /// @dev Release voting tokens and exit the private voting contract
     function withdraw(uint256 wad) public {
@@ -62,7 +55,7 @@ contract Daisy is MACISharedObjs, DaisyGatekeeper,  InitialVoiceCreditProxy {
     function publishMessage(Message memory _message,
         PubKey memory _encPubKey
         ) public {
-        require(isInMemberList(msg.sender));
+        require(gatekeeper.isInMemberList(msg.sender));
         require(iou.balanceOf(msg.sender) > 0 );
         maci.publishMessage(_message,_encPubKey);
     }
@@ -128,7 +121,7 @@ contract Daisy is MACISharedObjs, DaisyGatekeeper,  InitialVoiceCreditProxy {
 
     /// @dev Lock MKR tokens and issue IOU tokens for users to claim 
     function _lock(uint256 wad) internal {
-        isInMemberList(msg.sender);
+        gatekeeper.isInMemberList(msg.sender);
         gov.pull(msg.sender, wad);   // mkr from user
         // add to maci state tree
         chief.lock(wad);       // mkr out, ious in
@@ -137,7 +130,7 @@ contract Daisy is MACISharedObjs, DaisyGatekeeper,  InitialVoiceCreditProxy {
 
     /// @dev Release MKR tokens from private voting contract
     function _free(uint256 wad) internal {
-        isInMemberList(msg.sender);
+        gatekeeper.isInMemberList(msg.sender);
         iou.pull(msg.sender, wad);   // iou from user
         // remove from maci state tree
         chief.free(wad);       // ious out, mkr in
