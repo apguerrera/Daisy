@@ -4,7 +4,7 @@ pragma solidity ^0.5.0;
 import { SignUpGatekeeper } from "./SignUpGatekeeper.sol";
 import { BatchUpdateStateTreeVerifier } from "./BatchUpdateStateTreeVerifier.sol";
 import { QuadVoteTallyVerifier } from "./QuadVoteTallyVerifier.sol";
-// import { InitialVoiceCreditProxy } from './initialVoiceCreditProxy/InitialVoiceCreditProxy.sol';
+import { InitialVoiceCreditProxy } from './InitialVoiceCreditProxy.sol';
 
 import { IncrementalMerkleTree } from "./IncrementalMerkleTree.sol"; 
 import { DomainObjs } from './DomainObjs.sol'; 
@@ -89,7 +89,7 @@ contract MiniMACI is Ownable, DomainObjs, ComputeRoot, MACIParameters, VerifyTal
 
     // The contract which provides the values of the initial voice credit
     // balance per user
-    // InitialVoiceCreditProxy public initialVoiceCreditProxy;
+    InitialVoiceCreditProxy public initialVoiceCreditProxy;
 
     // The coordinator's public key
     PubKey public coordinatorPubKey;
@@ -247,18 +247,18 @@ contract MiniMACI is Ownable, DomainObjs, ComputeRoot, MACIParameters, VerifyTal
     function signUp(
         uint256 _x,
         uint256 _y,
-        bytes memory _signUpGatekeeperData
+        bytes memory _signUpGatekeeperData, 
         bytes memory _initialVoiceCreditProxyData
     ) 
     public {
         PubKey memory userPubKey = PubKey({x:_x,y:_y});
-        signUp(userPubKey, _signUpGatekeeperData);
+        signUp(userPubKey, _signUpGatekeeperData, _initialVoiceCreditProxyData);
     }
 
     function signUp(
         PubKey memory _userPubKey,
-        bytes memory _signUpGatekeeperData
-        // bytes memory _initialVoiceCreditProxyData
+        bytes memory _signUpGatekeeperData, 
+        bytes memory _initialVoiceCreditProxyData
     ) 
     public {
 

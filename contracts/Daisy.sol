@@ -34,7 +34,7 @@ contract Daisy is MACISharedObjs, DaisyGatekeeper,  InitialVoiceCreditProxy {
 
     /// @dev Add user to members list and state tree then lock MKR tokens
     function signUp(uint256 wad, PubKey memory _key) public {
-        maci.signUp(_key,"");
+        maci.signUp(_key,"","");
         _lock(wad);
     }
 

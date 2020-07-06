@@ -5,7 +5,7 @@ pragma solidity ^0.5.0;
 import { SignUpGatekeeper } from "./Maci/SignUpGatekeeper.sol";
 import { BatchUpdateStateTreeVerifier } from "./Maci/BatchUpdateStateTreeVerifier.sol";
 import { QuadVoteTallyVerifier } from "./Maci/QuadVoteTallyVerifier.sol";
-// import { InitialVoiceCreditProxy } from './Maci/InitialVoiceCreditProxy.sol';
+import { InitialVoiceCreditProxy } from './Maci/InitialVoiceCreditProxy.sol';
 
 import { IncrementalMerkleTree } from "./Maci/IncrementalMerkleTree.sol"; 
 import { DomainObjs } from './Maci/DomainObjs.sol'; 

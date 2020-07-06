@@ -2,6 +2,7 @@ pragma experimental ABIEncoderV2;
 pragma solidity ^0.5.0;
 
 import { SignUpGatekeeper } from "./Maci/SignUpGatekeeper.sol";
+import { InitialVoiceCreditProxy } from './Maci/InitialVoiceCreditProxy.sol';
 
 import { IncrementalMerkleTree } from "./Maci/IncrementalMerkleTree.sol"; 
 import { DomainObjs } from './Maci/DomainObjs.sol'; 
@@ -38,7 +39,7 @@ contract MiniMaciState is Ownable, DomainObjs, ComputeRoot, MACIParameters {
 
     // The contract which provides the values of the initial voice credit
     // balance per user
-    // InitialVoiceCreditProxy public initialVoiceCreditProxy;
+    InitialVoiceCreditProxy public initialVoiceCreditProxy;
 
     // The coordinator's public key
     PubKey public coordinatorPubKey;
@@ -59,7 +60,7 @@ contract MiniMaciState is Ownable, DomainObjs, ComputeRoot, MACIParameters {
         TreeDepths memory _treeDepths,
         MaxValues memory _maxValues,
         SignUpGatekeeper _signUpGatekeeper,
-        // InitialVoiceCreditProxy _initialVoiceCreditProxy,
+        InitialVoiceCreditProxy _initialVoiceCreditProxy,
         PubKey memory _coordinatorPubKey
     ) Ownable() public {
 
@@ -69,7 +70,7 @@ contract MiniMaciState is Ownable, DomainObjs, ComputeRoot, MACIParameters {
         signUpGatekeeper = _signUpGatekeeper;
         
         // Set the initial voice credit balance proxy
-        // initialVoiceCreditProxy = _initialVoiceCreditProxy;
+        initialVoiceCreditProxy = _initialVoiceCreditProxy;
 
         // Check and store the maximum number of signups
         // It is the user's responsibility to ensure that the state tree depth
@@ -112,18 +113,18 @@ contract MiniMaciState is Ownable, DomainObjs, ComputeRoot, MACIParameters {
     function signUp(
         uint256 _x,
         uint256 _y,
-        bytes memory _signUpGatekeeperData
-        // bytes memory _initialVoiceCreditProxyData
+        bytes memory _signUpGatekeeperData, 
+        bytes memory _initialVoiceCreditProxyData
     ) 
     public {
         PubKey memory userPubKey = PubKey({x:_x,y:_y});
-        signUp(userPubKey, _signUpGatekeeperData);
+        signUp(userPubKey, _signUpGatekeeperData,_initialVoiceCreditProxyData);
     }
 
     function signUp(
         PubKey memory _userPubKey,
-        bytes memory _signUpGatekeeperData
-        // bytes memory _initialVoiceCreditProxyData
+        bytes memory _signUpGatekeeperData, 
+        bytes memory _initialVoiceCreditProxyData
     ) 
     public {
 
@@ -133,13 +134,11 @@ contract MiniMaciState is Ownable, DomainObjs, ComputeRoot, MACIParameters {
         // throw if the user has already registered or if ineligible to do so.
         signUpGatekeeper.register(msg.sender, _signUpGatekeeperData);
 
-        // uint256 voiceCreditBalance = initialVoiceCreditProxy.getVoiceCredits(
-        //     msg.sender,
-        //     _initialVoiceCreditProxyData
-        // );
+        uint256 voiceCreditBalance = initialVoiceCreditProxy.getVoiceCredits(
+            msg.sender,
+            _initialVoiceCreditProxyData
+        );
 
-        // AG: This needs to be the locked up MKR/IOU balance
-        uint256 voiceCreditBalance = 100;
 
         // Create, hash, and insert a fresh state leaf
         StateLeaf memory stateLeaf = StateLeaf({
