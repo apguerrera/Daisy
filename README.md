@@ -41,9 +41,16 @@ It is generally considered a best practice to keep wallets that hold any signifi
 * To vote, MKR owners must “lock up” their tokens by transferring them to the voting system. Once transferred, they can then vote on different proposals with the weight of the MKR that is locked up.
 * The voting proxy contract assures that MKR owners can vote with the full weight of the MKR they own, both for Governance voting and for Executive voting.
 
-#### Add Privacy Pin (New)
-* User signs a 4 digit pin of their choosing with their hot wallet key
+#### Add Privacy Pin (Users, New / optional)
+* User adds 4 digit pin, signed by their hot wallet. 
+* This pin can be changed at any time
 
+#### Vote on proposals (Users)
+* Vote normally. Enter your pin to vote anoymously
+
+#### Proof of Correctness (Submitted by MakerDAO)
+* Votes are tallied and verified with a proof
+* Final vote count is commited and publicly verifiable
 
 ## Features
 #### No Secondary Keys or ZK-Notes
