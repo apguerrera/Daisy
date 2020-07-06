@@ -66,7 +66,8 @@ It is generally considered a best practice to keep wallets that hold any signifi
 #### View the demo videos.
 https://photos.google.com/share/AF1QipNQyAW2YxNzll9R-E4DYOW6ppD-lr5bW2UOyPuVBH_1AvJOouVyq-SG1xp0vgEnxQ?key=Rl9aWWM2bWtHclN4cHA1QzlTR0hDYmJtQXNweTF3
 
-#### Smart Contracts
+#### Deployed Smart Contracts
+https://ropsten.etherscan.io/address/0xfC5998aE24dD8ECCaD7Acbf1427002b94f3830fc
 
 #### Pin powered Maci KeyPair Generator (AWS Lambda / Temperamental)
 https://studio.petyl.com/voting/daisy
@@ -99,6 +100,24 @@ The smart contracts paired with proof systems continue to emerge as a developmen
 
 In this work, we have implemented and tested a sample e-voting Daisy’s smart contract for the Ethereum using the Ethereum based MKR wallets using Solidity and Circom. User privacy was preserved by encrypting the votes and key changes. 
 Users can submit their votes from their wallets, and these transaction requests are handled with the consensus of every single Ethereum node. MakerDAO acting as the coordinator also is required to submit a verifiable proof for correctness of computation. This consensus creates a transparent environment for e-voting. In this way, the transparency of the system will be kept intact while maintaining user privacy and anonymity.
+
+
+Anyone in the community, not only MKR holder can run `verify` to check if the tally is correct:
+
+```bash
+node maci/build/index.js verify -t tally.json
+```
+
+Example output:
+
+```
+The results commitment in the specified file is correct given the tally and salt
+The total spent voice credit commitment in the specified file is correct given the tally and salt
+The per vote option spent voice credit commitment in the specified file is correct given the tally and salt
+The results commitment in the MACI contract on-chain is valid
+The total spent voice credit commitment in the MACI contract on-chain is valid
+The per vote option spent voice credit commitment in the MACI contract on-chain is valid
+```
 
 
 #### Delegation
