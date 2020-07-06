@@ -22,6 +22,8 @@ It gets even worse when the stakes are high when coercion is involved and people
 #### Add a pin number. 
 It is as simple as that. 
 
+![daisy pin](/docs/mkrpin.jpg "Daisy Pin")
+
 Under the covers, sure there is some fancy cryptography, but for the users, it doesn’t need to be more complicated than that. If for whatever reason, say you had a lot of MKR and were asked to vote one way or worse, coerced to do so, you can simply use a dummy pin. It will still work, they would never know, it just won’t be counted by Maker. 
 Everything on-chain is encrypted, so neither your preference nor its validity can be checked by anyone else. There is also proof that Maker counted every message just to be sure.   
 
