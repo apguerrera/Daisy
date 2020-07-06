@@ -22,7 +22,7 @@ It gets even worse when the stakes are high when coercion is involved and people
 #### Add a pin number. 
 It is as simple as that. 
 
-Under the covers, sure there is some fancy cryptography, but it doesn’t need to be more complicated than that. If for whatever reason, say you had a lot of MKR and were asked to vote one way or worse, coerced to do so, you can simply use a dummy pin. It will still work, they would never know, it just won’t be counted by Maker. 
+Under the covers, sure there is some fancy cryptography, but for the users, it doesn’t need to be more complicated than that. If for whatever reason, say you had a lot of MKR and were asked to vote one way or worse, coerced to do so, you can simply use a dummy pin. It will still work, they would never know, it just won’t be counted by Maker. 
 Everything on-chain is encrypted, so neither your preference nor its validity can be checked by anyone else. There is also proof that Maker counted every message just to be sure.   
 
 #### Multiple Voting
@@ -53,6 +53,7 @@ It is generally considered a best practice to keep wallets that hold any signifi
 
 #### Proof of Correctness (Submitted by MakerDAO)
 * Votes are tallied and verified with a proof
+* Circom circuit ensures every vote is counted, correctly
 * Final vote count is commited and publicly verifiable
 
 ## Features
@@ -74,15 +75,12 @@ We can make a system that provides the collusion resistance guarantee with a cen
 #### Security
 We use the existing proxy voting contracts and add a layer of zero-knowledge proofs to signal our vote. 
 
-#### Anonymity
-There is no doubt that the revolutionary concept of the blockchain, which is the underlying technology. What makes it a powerful tool for digitizing everyday services is the introduction of smart contracts, as in the Ethereum platform. Smart contracts are meaningful pieces of codes, to be integrated into the blockchain and executed as scheduled in every step of blockchain updates. E-voting on the other hand,
+#### Transparent Anonymity
 
+The smart contracts paired with proof systems continue to emerge as a developments of safer, cheaper, more secure, more transparent, and easier-to-use e-voting systems. An e-voting system must be secure, as it should not allow duplicate votes and be fully transparent while protecting the privacy of the attendees. 
 
-The blockchain with the smart contracts emerges as a good candidate to use in developments of safer, cheaper, more secure, more transparent, and easier-to-use e-voting systems. Ethereum and its network are one of the most suitable ones, due to its consistency, widespread use, and provision of smart contracts logic. An e-voting system must be secure, as it should not allow duplicate votes and be fully transparent while protecting the privacy of the attendees. 
-
-
-In this work, we have implemented and tested a sample e-voting Daisy’s smart contract for the Ethereum network using the Ethereum based MKR wallets and the Solidity language.
-After an election is held, eventually, the Ethereum blockchain will hold the records of ballots and votes. Users can submit their votes via an Android device or directly from their wallets, and these transaction requests are handled with the consensus of every single Ethereum node. This consensus creates a transparent environment for e-voting. In this way, the Anonymity & Privacy of the users will be kept safe.
+In this work, we have implemented and tested a sample e-voting Daisy’s smart contract for the Ethereum using the Ethereum based MKR wallets using Solidity and Circom. User privacy was preserved by encrypting the votes and key changes. 
+Users can submit their votes from their wallets, and these transaction requests are handled with the consensus of every single Ethereum node. MakerDAO acting as the coordinator also is required to submit a verifiable proof for correctness of computation. This consensus creates a transparent environment for e-voting. In this way, the transparency of the system will be kept intact while maintaining user privacy and anonymity.
 
 
 #### Delegation
