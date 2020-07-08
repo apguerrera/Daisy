@@ -66,10 +66,20 @@ It is generally considered a best practice to keep wallets that hold any signifi
 #### View the demo videos.
 https://photos.google.com/share/AF1QipNQyAW2YxNzll9R-E4DYOW6ppD-lr5bW2UOyPuVBH_1AvJOouVyq-SG1xp0vgEnxQ?key=Rl9aWWM2bWtHclN4cHA1QzlTR0hDYmJtQXNweTF3
 
+
+#### Testing in Brownie
+```
+brownie test -v
+```
+#### Smart contract deployment
+```
+brownie run deploy/deploy_daisy.py --network ropsten
+```
+
 #### Deployed Smart Contracts
 https://ropsten.etherscan.io/address/0xfC5998aE24dD8ECCaD7Acbf1427002b94f3830fc
 
-#### Pin powered Maci KeyPair Generator (AWS Lambda / Temperamental)
+#### Pin powered Maci KeyPair Generator (AWS Lambda deployment / Temperamental / Not 100%)
 https://studio.petyl.com/voting/daisy
 
 

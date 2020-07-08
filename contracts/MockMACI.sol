@@ -345,7 +345,7 @@ contract MockMACI is Ownable, MACIParameters, MACISharedObjs {
         uint256 _leaf,
         uint256[][] memory _pathElements,
         uint256 _salt
-    ) public view returns (bool) {
+    ) public pure returns (bool) {
 
         return true;
     }
@@ -359,7 +359,7 @@ contract MockMACI is Ownable, MACIParameters, MACISharedObjs {
     function verifySpentVoiceCredits(
         uint256 _spent,
         uint256 _salt
-    ) public view returns (bool) {
+    ) public pure returns (bool) {
         
         return _spent == _salt;
     }

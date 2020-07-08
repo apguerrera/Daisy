@@ -1,9 +1,9 @@
 
-from brownie import accounts, web3, Wei, rpc
+from brownie import accounts, web3, Wei #, rpc
 from brownie.network.transaction import TransactionReceipt
 from brownie.convert import to_address
 import pytest
-from brownie import Contract
+from brownie import Contract, network
 from settings import *
 from poseidon import *
 
@@ -11,11 +11,18 @@ from poseidon import *
 # Deploy Contracts
 ######################################
 
+# add accounts if active network is ropsten
+if network.show_active() in ['ropsten']:
+    # 0x2A40019ABd4A61d71aBB73968BaB068ab389a636
+    accounts.add('4ca89ec18e37683efa18e0434cd9a28c82d461189c477f5622dae974b43baebf')
+    # 0x1F3389Fc75Bf55275b03347E4283f24916F402f7
+    accounts.add('fa3c06c67426b848e6cef377a2dbd2d832d3718999fbe377236676c9216d8ec0')
 
 
 @pytest.fixture(scope='module', autouse=True)
 def mkr_token(DSToken):
     mkr_token = DSToken.deploy(MKR_NAME, {'from': accounts[0]})
+    mkr_token.mint(accounts[1], MKR_TOKENS_1, {'from': accounts[0]})
     return mkr_token
 
 @pytest.fixture(scope='module', autouse=True)
@@ -27,6 +34,7 @@ def iou_token(DSToken):
 @pytest.fixture(scope='module', autouse=True)
 def mkr_chief(DSChief, mkr_token, iou_token):
     mkr_chief = DSChief.deploy(mkr_token, iou_token, MAX_YAYS, {'from': accounts[0]})
+    iou_token.setOwner(mkr_chief, {'from': accounts[0]})
     return mkr_chief
 
 @pytest.fixture(scope='module', autouse=True)
@@ -63,34 +71,35 @@ def poseidon_3(interface):
     return poseidon_3
 
 @pytest.fixture(scope='module', autouse=True)
-def mini_maci(MockMACI,gate_keeper, poseidon_3, poseidon_6, batch_verifier,tally_verifier, credit_proxy):
-    treeDepths = [4,4,4]
+def mini_maci(MiniMACI,gate_keeper, poseidon_3, poseidon_6, batch_verifier,tally_verifier, credit_proxy):
+    treeDepths = [10,10,4]
     batchSizes = [4,4]
-    maxValues = [100,100,10]
+    maxValues = [2**10 - 1, 2**10 - 1, 2**4 - 1]
     signUpGatekeeper = gate_keeper
     batchUstVerifier = batch_verifier
     qvtVerifier = tally_verifier
-    signUpDurationSeconds = 600
-    votingDurationSeconds = 600
+    signUpDurationSeconds = SIGNUP_TIME
+    votingDurationSeconds = VOTING_TIME
     initialVoiceCreditProxy = credit_proxy
     coordinatorPubKey = [0,0]
 
-    mini_maci = MockMACI.deploy( treeDepths,
+    mini_maci = MiniMACI.deploy( treeDepths,
                                     batchSizes,
-                                    maxValues,
-                                    signUpGatekeeper,
                                     batchUstVerifier,
                                     qvtVerifier,
-                                    signUpDurationSeconds,
-                                    votingDurationSeconds,
                                     initialVoiceCreditProxy,
                                     coordinatorPubKey,
-
+                                    poseidon_3, 
+                                    poseidon_6,
                             {'from': accounts[0]})
+    mini_maci.initMaci(signUpDurationSeconds,
+                                    votingDurationSeconds, signUpGatekeeper, maxValues, {'from': accounts[0]})
+    gate_keeper.initGatekeeper(mini_maci, {'from': accounts[0]})
     return mini_maci
 
 
 @pytest.fixture(scope='module', autouse=True)
-def daisy(Daisy, mkr_chief, mini_maci, gate_keeper):
+def daisy(Daisy, mkr_chief, mkr_token, mini_maci, gate_keeper):
     daisy = Daisy.deploy(mkr_chief, mini_maci, gate_keeper, {'from': accounts[0]})
     return daisy
+

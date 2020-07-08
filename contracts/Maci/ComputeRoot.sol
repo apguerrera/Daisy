@@ -7,7 +7,7 @@ contract ComputeRoot is Hasher {
 
     uint8 internal constant LEAVES_PER_NODE = 5;
 
-    function computeEmptyRoot(uint8 _treeLevels, uint256 _zeroValue) public pure returns (uint256) {
+    function computeEmptyRoot(uint8 _treeLevels, uint256 _zeroValue) public view returns (uint256) {
         // Limit the Merkle tree to MAX_DEPTH levels
         require(
             _treeLevels > 0 && _treeLevels <= 32,
@@ -23,7 +23,7 @@ contract ComputeRoot is Hasher {
         return hashLeftRight(currentZero, currentZero);
     }
 
-    function computeEmptyQuinRoot(uint8 _treeLevels, uint256 _zeroValue) public pure returns (uint256) {
+    function computeEmptyQuinRoot(uint8 _treeLevels, uint256 _zeroValue) public view returns (uint256) {
         // Limit the Merkle tree to MAX_DEPTH levels
         require(
             _treeLevels > 0 && _treeLevels <= 32,

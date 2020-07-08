@@ -1,0 +1,71 @@
+{
+    "provider": "http://localhost:8545",
+    "maci": "0x689617d1F9D347505D51037178A2554B9d861E27",
+    "results": {
+        "commitment": "0x2d269339d22d9fbe470f49131fb2e3f4a60a82c6e9013c9590def81b3dc6d5f6",
+        "tally": [
+            "9",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0"
+        ],
+        "salt": "0x1ff9dd5352c92b08a613edd7cd82b49c78dac7ce211d4f8bf256e072c391bf73"
+    },
+    "totalVoiceCredits": {
+        "spent": "81",
+        "commitment": "0x467a690f2785a2fbea8018c9e5cba16a66c4643efe3e9c1dbc610888acae8bd",
+        "salt": "0x9229d6f0ddda5616ba51b8672801290948fb521d374e2d5bc234fcbaee42674"
+    },
+    "totalVoiceCreditsPerVoteOption": {
+        "commitment": "0x1b1a27be0a2a66af5bf2c3e9e6f3f7f6d4f15f27185d12eaa4160ff782a06ce5",
+        "tally": [
+            "81",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0"
+        ],
+        "salt": "0x2840b8d1c590f414915b264f3533bc7976fc2c968fe5ed16df8b96479bd5fdd9"
+    }
+}

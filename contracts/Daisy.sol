@@ -36,6 +36,10 @@ contract Daisy is MACISharedObjs {
         maci.signUp(_key,"","");
         _lock(wad);
     }
+    function signUp(uint256 wad, uint256 _x, uint256 _y) public {
+        maci.signUp(_x,_y,"","");
+        _lock(wad);
+    }
 
 
     /// @dev Release voting tokens and exit the private voting contract
@@ -55,7 +59,7 @@ contract Daisy is MACISharedObjs {
     function publishMessage(Message memory _message,
         PubKey memory _encPubKey
         ) public {
-        require(gatekeeper.isInMemberList(msg.sender));
+        // require(gatekeeper.isInMemberList(msg.sender));
         require(iou.balanceOf(msg.sender) > 0 );
         maci.publishMessage(_message,_encPubKey);
     }
@@ -123,7 +127,6 @@ contract Daisy is MACISharedObjs {
     function _lock(uint256 wad) internal {
         gatekeeper.isInMemberList(msg.sender);
         gov.pull(msg.sender, wad);   // mkr from user
-        // add to maci state tree
         chief.lock(wad);       // mkr out, ious in
         iou.push(msg.sender, wad);   // iou to user
     }
@@ -132,7 +135,6 @@ contract Daisy is MACISharedObjs {
     function _free(uint256 wad) internal {
         gatekeeper.isInMemberList(msg.sender);
         iou.pull(msg.sender, wad);   // iou from user
-        // remove from maci state tree
         chief.free(wad);       // ious out, mkr in
         gov.push(msg.sender, wad);   // mkr to user
     }

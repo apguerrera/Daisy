@@ -10,6 +10,7 @@ import { SnarkConstants } from './Maci/SnarkConstants.sol';
 import { ComputeRoot } from './Maci/ComputeRoot.sol'; 
 import { MACIParameters } from './Maci/MACIParameters.sol'; 
 import { Ownable } from "@openzeppelin/contracts/ownership/Ownable.sol";
+import '../../interfaces/Poseidon.sol'; 
 
 contract MiniMaciState is Ownable, DomainObjs, ComputeRoot, MACIParameters {
 
@@ -61,7 +62,8 @@ contract MiniMaciState is Ownable, DomainObjs, ComputeRoot, MACIParameters {
         MaxValues memory _maxValues,
         SignUpGatekeeper _signUpGatekeeper,
         InitialVoiceCreditProxy _initialVoiceCreditProxy,
-        PubKey memory _coordinatorPubKey
+        PubKey memory _coordinatorPubKey,
+        PoseidonT3 _poseidon3
     ) Ownable() public {
 
         treeDepths = _treeDepths;
@@ -89,7 +91,7 @@ contract MiniMaciState is Ownable, DomainObjs, ComputeRoot, MACIParameters {
         uint256 h = hashedBlankStateLeaf();
 
         // Create the state tree
-        stateTree = new IncrementalMerkleTree(_treeDepths.stateTreeDepth, h);
+        stateTree = new IncrementalMerkleTree(_treeDepths.stateTreeDepth, h, _poseidon3);
 
         // Make subsequent insertions start from leaf #1, as leaf #0 is only
         // updated with random data if a command is invalid.
@@ -174,7 +176,7 @@ contract MiniMaciState is Ownable, DomainObjs, ComputeRoot, MACIParameters {
         return hashStateLeaf(stateLeaf);
     }
 
-    function calcEmptyVoteOptionTreeRoot(uint8 _levels) public pure returns (uint256) {
+    function calcEmptyVoteOptionTreeRoot(uint8 _levels) public view returns (uint256) {
         return computeEmptyQuinRoot(_levels, 0);
     }
 

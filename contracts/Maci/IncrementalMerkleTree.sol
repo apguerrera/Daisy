@@ -24,6 +24,7 @@ pragma solidity ^0.5.0;
 import { SnarkConstants } from "./SnarkConstants.sol";
 import { Hasher } from "./Hasher.sol";
 import { Ownable } from "@openzeppelin/contracts/ownership/Ownable.sol";
+import {PoseidonT3, PoseidonT6} from "../../interfaces/Poseidon.sol";
 
 contract IncrementalMerkleTree is Ownable, Hasher {
     // The maximum tree depth
@@ -61,7 +62,7 @@ contract IncrementalMerkleTree is Ownable, Hasher {
      *                   say that the deployer knows the preimage of an empty
      *                   leaf.
      */
-    constructor(uint8 _treeLevels, uint256 _zeroValue) public {
+    constructor(uint8 _treeLevels, uint256 _zeroValue, PoseidonT3 _poseidon3) public {
         // Limit the Merkle tree to MAX_DEPTH levels
         require(
             _treeLevels > 0 && _treeLevels <= MAX_DEPTH,
@@ -86,7 +87,7 @@ contract IncrementalMerkleTree is Ownable, Hasher {
         treeLevels = _treeLevels;
 
         zeros[0] = _zeroValue;
-
+        setPoseidon3(_poseidon3);
         uint256 currentZero = _zeroValue;
         for (uint8 i = 1; i < _treeLevels; i++) {
             uint256 hashed = hashLeftRight(currentZero, currentZero);

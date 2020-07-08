@@ -12,7 +12,7 @@ contract DomainObjs is Hasher, MACISharedObjs {
         uint256 nonce;
     }
 
-    function hashStateLeaf(StateLeaf memory _stateLeaf) public pure returns (uint256) {
+    function hashStateLeaf(StateLeaf memory _stateLeaf) public view returns (uint256) {
         uint256[] memory plaintext = new uint256[](5);
         plaintext[0] = _stateLeaf.pubKey.x;
         plaintext[1] = _stateLeaf.pubKey.y;
@@ -23,7 +23,7 @@ contract DomainObjs is Hasher, MACISharedObjs {
         return hash5(plaintext);
     }
 
-    function hashMessage(Message memory _message) public pure returns (uint256) {
+    function hashMessage(Message memory _message) public view returns (uint256) {
         uint256[] memory plaintext = new uint256[](MESSAGE_DATA_LENGTH + 1);
 
         plaintext[0] = _message.iv;

@@ -12,6 +12,7 @@ import { SnarkConstants } from './SnarkConstants.sol';
 import { ComputeRoot } from './ComputeRoot.sol'; 
 import { MACIParameters } from './MACIParameters.sol'; 
 import { VerifyTally } from './VerifyTally.sol'; 
+import '../../interfaces/Poseidon.sol'; 
 import { Ownable } from "@openzeppelin/contracts/ownership/Ownable.sol";
 
 contract MiniMACI is Ownable, DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
@@ -30,7 +31,7 @@ contract MiniMACI is Ownable, DomainObjs, ComputeRoot, MACIParameters, VerifyTal
 
     // The number of state leaves to tally per batch via the vote tally snark
     uint8 public tallyBatchSize;
-
+    bool public initialzed;
     // The current message batch index
     uint256 public currentMessageBatchIndex;
 
@@ -54,7 +55,8 @@ contract MiniMACI is Ownable, DomainObjs, ComputeRoot, MACIParameters, VerifyTal
     uint256 public currentResultsCommitment;
 
     // To store hashLeftRight(0, 0). We precompute it here to save gas.
-    uint256 public currentSpentVoiceCreditsCommitment = hashLeftRight(0, 0);
+    // uint256 public currentSpentVoiceCreditsCommitment = hashLeftRight(0, 0);
+    uint256 public currentSpentVoiceCreditsCommitment;
 
     // To store hashLeftRight(Merkle root of 5 ** voteOptionTreeDepth zeros, 0)
     uint256 public currentPerVOSpentVoiceCreditsCommitment;
@@ -94,8 +96,8 @@ contract MiniMACI is Ownable, DomainObjs, ComputeRoot, MACIParameters, VerifyTal
     // The coordinator's public key
     PubKey public coordinatorPubKey;
 
-    uint256 public numSignUps = 0;
-    uint256 public numMessages = 0;
+    uint256 public numSignUps;
+    uint256 public numMessages;
 
     TreeDepths public treeDepths;
 
@@ -111,18 +113,19 @@ contract MiniMACI is Ownable, DomainObjs, ComputeRoot, MACIParameters, VerifyTal
         PubKey indexed _encPubKey
     );
 
-    constructor(
+    constructor (
         TreeDepths memory _treeDepths,
         BatchSizes memory _batchSizes,
-        MaxValues memory _maxValues,
-        SignUpGatekeeper _signUpGatekeeper,
         BatchUpdateStateTreeVerifier _batchUstVerifier,
         QuadVoteTallyVerifier _qvtVerifier,
-        uint256 _signUpDurationSeconds,
-        uint256 _votingDurationSeconds,
         InitialVoiceCreditProxy _initialVoiceCreditProxy,
-        PubKey memory _coordinatorPubKey
+        PubKey memory _coordinatorPubKey, 
+        PoseidonT3 _poseidon3,
+        PoseidonT6 _poseidon6
     ) Ownable() public {
+
+        setPoseidon3(_poseidon3);
+        setPoseidon6(_poseidon6);
 
         treeDepths = _treeDepths;
 
@@ -133,13 +136,6 @@ contract MiniMACI is Ownable, DomainObjs, ComputeRoot, MACIParameters, VerifyTal
         batchUstVerifier = _batchUstVerifier;
         qvtVerifier = _qvtVerifier;
 
-        // Set the sign-up duration
-        signUpTimestamp = now;
-        signUpDurationSeconds = _signUpDurationSeconds;
-        votingDurationSeconds = _votingDurationSeconds;
-        
-        // Set the sign-up gatekeeper contract
-        signUpGatekeeper = _signUpGatekeeper;
         
         // Set the initial voice credit balance proxy
         initialVoiceCreditProxy = _initialVoiceCreditProxy;
@@ -147,14 +143,36 @@ contract MiniMACI is Ownable, DomainObjs, ComputeRoot, MACIParameters, VerifyTal
         // Set the coordinator's public key
         coordinatorPubKey = _coordinatorPubKey;
 
+    }
+
+
+
+    function initMaci ( 
+        uint256 _signUpDurationSeconds,
+        uint256 _votingDurationSeconds,
+        SignUpGatekeeper _signUpGatekeeper,
+        MaxValues memory _maxValues
+
+        ) public {
+        require(!initialzed);
+
+
+        // Set the sign-up duration
+        signUpTimestamp = now;
+        signUpDurationSeconds = _signUpDurationSeconds;
+        votingDurationSeconds = _votingDurationSeconds;
+        
+        // Set the sign-up gatekeeper contract
+        signUpGatekeeper = _signUpGatekeeper;
+    
         // Calculate and cache the max number of leaves for each tree.
         // They are used as public inputs to the batch update state tree snark.
-        messageTreeMaxLeafIndex = uint256(2) ** _treeDepths.messageTreeDepth - 1;
+        messageTreeMaxLeafIndex = uint256(2) ** treeDepths.messageTreeDepth - 1;
 
         // Check and store the maximum number of signups
         // It is the user's responsibility to ensure that the state tree depth
         // is just large enough and not more, or they will waste gas.
-        uint256 stateTreeMaxLeafIndex = uint256(2) ** _treeDepths.stateTreeDepth - 1;
+        uint256 stateTreeMaxLeafIndex = uint256(2) ** treeDepths.stateTreeDepth - 1;
         require(_maxValues.maxUsers <= stateTreeMaxLeafIndex, "MACI: invalid maxUsers value");
         maxUsers = _maxValues.maxUsers;
 
@@ -168,14 +186,16 @@ contract MiniMACI is Ownable, DomainObjs, ComputeRoot, MACIParameters, VerifyTal
         voteOptionsMaxLeafIndex = _maxValues.maxVoteOptions;
 
         // Create the message tree
-        messageTree = new IncrementalMerkleTree(_treeDepths.messageTreeDepth, ZERO_VALUE);
+        messageTree = new IncrementalMerkleTree(treeDepths.messageTreeDepth, ZERO_VALUE, poseidon3);
 
         // Calculate and store the empty vote option tree root. This value must
         // be set before we call hashedBlankStateLeaf() later
-        emptyVoteOptionTreeRoot = calcEmptyVoteOptionTreeRoot(_treeDepths.voteOptionTreeDepth);
+        emptyVoteOptionTreeRoot = calcEmptyVoteOptionTreeRoot(treeDepths.voteOptionTreeDepth);
 
         // Calculate and store a commitment to 5 ** voteOptionTreeDepth zeros,
         // and a salt of 0.
+        currentSpentVoiceCreditsCommitment = hashLeftRight(0, 0);
+
         currentResultsCommitment = hashLeftRight(emptyVoteOptionTreeRoot, 0);
         currentPerVOSpentVoiceCreditsCommitment = currentResultsCommitment;
 
@@ -183,11 +203,12 @@ contract MiniMACI is Ownable, DomainObjs, ComputeRoot, MACIParameters, VerifyTal
         uint256 h = hashedBlankStateLeaf();
 
         // Create the state tree
-        stateTree = new IncrementalMerkleTree(_treeDepths.stateTreeDepth, h);
+        stateTree = new IncrementalMerkleTree(treeDepths.stateTreeDepth, h, poseidon3);
 
         // Make subsequent insertions start from leaf #1, as leaf #0 is only
         // updated with random data if a command is invalid.
         stateTree.insertLeaf(h);
+        initialzed = true;
     }
 
     /*
@@ -264,8 +285,8 @@ contract MiniMACI is Ownable, DomainObjs, ComputeRoot, MACIParameters, VerifyTal
 
         require(numSignUps < maxUsers, "MACI: maximum number of signups reached");
 
-        // Register the user via the sign-up gatekeeper. This function should
-        // throw if the user has already registered or if ineligible to do so.
+        // // Register the user via the sign-up gatekeeper. This function should
+        // // throw if the user has already registered or if ineligible to do so.
         signUpGatekeeper.register(msg.sender, _signUpGatekeeperData);
 
         uint256 voiceCreditBalance = initialVoiceCreditProxy.getVoiceCredits(
@@ -274,17 +295,17 @@ contract MiniMACI is Ownable, DomainObjs, ComputeRoot, MACIParameters, VerifyTal
         );
 
 
-        // Create, hash, and insert a fresh state leaf
-        StateLeaf memory stateLeaf = StateLeaf({
-            pubKey: _userPubKey,
-            voteOptionTreeRoot: emptyVoteOptionTreeRoot,
-            voiceCreditBalance: voiceCreditBalance,
-            nonce: 0
-        });
+        // // Create, hash, and insert a fresh state leaf
+        // StateLeaf memory stateLeaf = StateLeaf({
+        //     pubKey: _userPubKey,
+        //     voteOptionTreeRoot: emptyVoteOptionTreeRoot,
+        //     voiceCreditBalance: voiceCreditBalance,
+        //     nonce: 0
+        // });
 
-        uint256 hashedLeaf = hashStateLeaf(stateLeaf);
+        // uint256 hashedLeaf = hashStateLeaf(stateLeaf);
 
-        stateTree.insertLeaf(hashedLeaf);
+        // stateTree.insertLeaf(hashedLeaf);
 
         numSignUps ++;
 
@@ -629,7 +650,7 @@ contract MiniMACI is Ownable, DomainObjs, ComputeRoot, MACIParameters, VerifyTal
         return computedCommitment == currentSpentVoiceCreditsCommitment;
     }
 
-    function calcEmptyVoteOptionTreeRoot(uint8 _levels) public pure returns (uint256) {
+    function calcEmptyVoteOptionTreeRoot(uint8 _levels) public view returns (uint256) {
         return computeEmptyQuinRoot(_levels, 0);
     }
 

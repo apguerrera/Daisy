@@ -15,6 +15,7 @@ import { MACIParameters } from './Maci/MACIParameters.sol';
 import { VerifyTally } from './Maci/VerifyTally.sol'; 
 import { Ownable } from "@openzeppelin/contracts/ownership/Ownable.sol";
 import { MiniMaciState } from "./MiniMaciState.sol";
+import '../../interfaces/Poseidon.sol'; 
 
 contract MiniMACIMessage is Ownable, DomainObjs, ComputeRoot, MACIParameters, VerifyTally {
 
@@ -113,7 +114,9 @@ contract MiniMACIMessage is Ownable, DomainObjs, ComputeRoot, MACIParameters, Ve
         uint256 _votingDurationSeconds,
         MiniMaciState _maciState,
         // InitialVoiceCreditProxy _initialVoiceCreditProxy,
-        PubKey memory _coordinatorPubKey
+        PubKey memory _coordinatorPubKey,
+        PoseidonT3 _poseidon3
+
     ) Ownable() public {
         currentSpentVoiceCreditsCommitment = hashLeftRight(0, 0);
         treeDepths = _treeDepths;
@@ -155,7 +158,7 @@ contract MiniMACIMessage is Ownable, DomainObjs, ComputeRoot, MACIParameters, Ve
         voteOptionsMaxLeafIndex = _maxValues.maxVoteOptions;
 
         // Create the message tree
-        messageTree = new IncrementalMerkleTree(_treeDepths.messageTreeDepth, ZERO_VALUE);
+        messageTree = new IncrementalMerkleTree(_treeDepths.messageTreeDepth, ZERO_VALUE, _poseidon3);
 
         // Calculate and store the empty vote option tree root. This value must
         // be set before we call hashedBlankStateLeaf() later
@@ -530,7 +533,7 @@ contract MiniMACIMessage is Ownable, DomainObjs, ComputeRoot, MACIParameters, Ve
         return computedCommitment == currentSpentVoiceCreditsCommitment;
     }
 
-    function calcEmptyVoteOptionTreeRoot(uint8 _levels) public pure returns (uint256) {
+    function calcEmptyVoteOptionTreeRoot(uint8 _levels) public view returns (uint256) {
         return computeEmptyQuinRoot(_levels, 0);
     }
 

@@ -1,5 +1,5 @@
 
-import "./MKRToken.sol";
+import "./DSToken.sol";
 
 pragma solidity ^0.5.16;
 

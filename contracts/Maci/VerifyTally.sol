@@ -12,7 +12,7 @@ contract VerifyTally is Hasher {
         uint256 _index,
         uint256 _leaf,
         uint256[][] memory _pathElements
-    ) public pure returns (uint256) {
+    ) public view returns (uint256) {
         uint256 pos = _index % LEAVES_PER_NODE;
         uint256 current = _leaf;
         uint8 k;

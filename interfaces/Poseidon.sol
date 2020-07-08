@@ -1,11 +1,11 @@
 pragma solidity ^0.5.0;
 
 
-library PoseidonT3 {
-    function poseidon(uint256[] memory input) public pure returns (uint256);
+interface PoseidonT3 {
+    function poseidon(uint256[] calldata input) external pure returns (uint256);
 }
 
 
-library PoseidonT6 {
-    function poseidon(uint256[] memory input) public pure returns (uint256);
+interface PoseidonT6 {
+    function poseidon(uint256[] calldata input) external pure returns (uint256);
 }
